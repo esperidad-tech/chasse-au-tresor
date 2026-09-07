@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Observer Recovery</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0a0d10;color:#d8dee6;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.wrap{max-width:760px;margin:auto;padding:22px}.head{font-size:20px;font-weight:800;letter-spacing:.04em;margin-bottom:5px}.muted{color:#8995a3}.card{background:#11161c;border:1px solid #29323c;border-radius:14px;padding:17px;margin-top:16px}.error{background:#1a1113;border:1px solid #682c33;border-radius:10px;padding:12px;line-height:1.5}textarea{width:100%;min-height:245px;background:#080c10;color:#e7ecf2;border:1px solid #34404c;border-radius:10px;padding:12px;margin-top:10px;font:inherit;font-size:13px;line-height:1.45}button{width:100%;margin-top:12px;padding:14px;border:0;border-radius:10px;font-weight:800;font-size:15px;background:#e7ebef;color:#101317}.log{margin-top:8px;background:#07090b;border-radius:10px;padding:12px;white-space:pre-wrap;line-height:1.45}.hidden{display:none}.ok{background:#101c14;border:1px solid #2d683a;border-radius:10px;padding:12px}.warn{margin-top:10px;color:#e2b86b;font-size:13px}</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">OBSERVER ARCHIVE / RECOVERY NODE</div>
+  <div class="muted">Local diagnostic interface</div>
+
+  <div class="card" id="broken">
+    <div class="error">SYSTEM FAILURE<br>Archive service did not start.<br>Error: policy validation failed.</div>
+    <p class="muted">A recovery fragment was found. Inspect the configuration, repair the fault, then apply the patch.</p>
+    <textarea id="editor" spellcheck="false">const recovery = {
+  session: 5,
+  archivePath: "/archive/session_05",
+  allowRecovery: false,
+  checksumMode: "strict"
+};
+
+function canStart(cfg) {
+  return cfg.allowRecovery === true
+      && cfg.session === 5;
+}</textarea>
+    <button id="apply">APPLY PATCH</button>
+    <div class="warn" id="feedback"></div>
+  </div>
+
+  <div class="card">
+    <div class="muted">SYSTEM LOG</div>
+    <div class="log" id="log">booting recovery node...
+archive service: FAILED
+waiting for manual patch_</div>
+  </div>
+
+  <div class="card hidden" id="success">
+    <div class="ok">PATCH ACCEPTED<br>ARCHIVE SERVICE RESTORED</div>
+    <p>Recovered record:</p>
+    <div class="log">SESSION 05
+SUBJECTS: 2
+STATUS: ACTIVE
+
+observer handshake...
+connection established.</div>
+  </div>
+</div>
+<script>
+const editor=document.getElementById('editor');
+const apply=document.getElementById('apply');
+const log=document.getElementById('log');
+const feedback=document.getElementById('feedback');
+const success=document.getElementById('success');
+const broken=document.getElementById('broken');
+apply.addEventListener('click',()=>{
+ const code=editor.value;
+ const enabled=/allowRecovery\s*:\s*true\b/.test(code);
+ const session=/session\s*:\s*5\b/.test(code);
+ if(enabled&&session){
+   log.textContent='validating patch...\npolicy check: OK\nsession index: 05\narchive service: STARTING\nobserver channel: CONNECTED';
+   feedback.textContent='';
+   success.classList.remove('hidden');
+   broken.classList.add('hidden');
+   success.scrollIntoView({behavior:'smooth'});
+ } else {
+   feedback.textContent='PATCH REJECTED — recovery remains disabled.';
+   log.textContent='validating patch...\npolicy check: FAILED\narchive service remains unavailable.';
+ }
+});
+</script>
+</body>
+</html>
